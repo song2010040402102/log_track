@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="common.css">
+	<style type="text/css">
+	</style>
+</head>
+<body>
+	<h1 style="text-align: center;">游戏服上报日志说明</h1>
+	<p>原始数据基本是针对游戏服的上报日志，对于其它的数据源大都是系统内使用不需对外说明，游戏服的上报日志包含head和body两部分，所有的head都包含loginName和time，大部分head只要与单个玩家相关且可获取到其基本信息都会带有玩家基本信息，像与在线人数及房间相关排除在外，玩家基本信息包含uid、roleName、platform、unionId、regTime、regIP、channel、device，字段含义如下：</p>	
+	<ul>
+		<li>loginName：玩家全服唯一标识</li>
+		<li>time：日志产生时间</li>
+		<li>uid：前端可采集的唯一用户id，例如手机号，采集不到则为0</li>
+		<li>roleName：玩家昵称</li>
+		<li>platform：平台标识，例如wechat、uqee，由于head部分预留字段已用尽，所以这个字段现在被设备唯一id征用了</li>
+		<li>unionId：微信授权后提供给玩家的唯一id，可用于微信分享</li>
+		<li>regTime：玩家注册游戏的时间戳</li>
+		<li>regIP：玩家注册游戏的ip地址</li>
+		<li>channel：玩家当前所在的渠道号</li>
+		<li>device：玩家所用的设备，对于APP为android、ios，对于微信小游戏则为微信提供的设备id</li>
+	</ul>
+	<p>body部分请看各日志流说明</p>
+</body>
+</html>

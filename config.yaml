@@ -1,0 +1,10 @@
+listen:
+  stat: 0.0.0.0:1111
+  plat: 0.0.0.0:2222
+  plat_tls: 0.0.0.0:3333
+
+connect:
+  mysql: 127.0.0.1:3306
+  plat: http://127.0.0.1:2222  
+
+file_url: http://*.*.*.*:1111

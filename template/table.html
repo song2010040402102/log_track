@@ -1,0 +1,35 @@
+{{define "table"}}
+	{{$lenTitle := len .Title}}
+	{{$lenHead := len .Heads}}
+	{{$lenItem := len .Items}}
+	{{$lenChild := len .Childs}}
+	{{if and (eq $lenHead 0) (eq $lenItem 0) (eq $lenChild 0)}}
+		{{.Title}}
+	{{else}}
+		<table border="2" cellpadding="10" cellspacing="0" style="border-collapse:collapse;width:100%;color:#000;">
+			{{if gt $lenTitle 0}}
+				<caption align="center" style="white-space: nowrap;">
+					<h1>{{.Title}}</h1>
+				</caption>
+			{{end}}
+			{{if gt $lenHead 0}}
+				<tr>
+					{{range .Heads}}<th style="white-space: nowrap;">{{.}}</th>{{end}}
+				</tr>
+			{{end}}
+			{{if gt $lenItem 0}}
+				{{range .Items}}
+					<tr>
+						{{range .}}<td align="center" style="white-space: nowrap;">{{.}}</td>{{end}}
+					</tr>
+				{{end}}
+			{{else}}
+				{{range .Childs}}
+					<tr>
+						{{range .}}<td>{{template "table" .}}</td>{{end}}
+					</tr>
+				{{end}}
+			{{end}}
+		</table>
+	{{end}}
+{{end}}

@@ -1,0 +1,518 @@
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">
+	<link rel="stylesheet" type="text/css" href="html/css/main.css?v=1">
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+	<script src="https://unpkg.com/element-ui@2.13.0/lib/index.js"></script>
+	<script type="text/javascript" src="html/js/main.js?v=1"></script>
+	<script type="text/javascript" src="html/js/channel.js?v=3"></script>
+	<script type="text/javascript">
+		function body_onload() {
+			get_sell_cfg()
+		}
+		function get_sell_cfg() {
+			get_req("sell_cfg_get?version=all", function(state, code, res) {
+				if (state == 4 && code == 200) {
+					var cfgs = JSON.parse(res).sell_cfgs
+					if (cfgs != null) {
+						for (var i = 0; i < cfgs.length; i++) {
+							var cfg = new_sell_cfg()
+							copy_sell_cfg(cfg, cfgs[i])
+							cfg.icon_url += "?v=" + new Date().getTime()
+							g_SellCfg.tableData.push(cfg)
+						}
+					}
+					adjust_table_height()
+				}
+				console.log("get_sell_cfg", state, code)
+			});
+		}
+		function new_sell_cfg() {
+			return {
+				mini_app_id: "",
+				mini_game_id: "",
+				mini_game_path: "",
+				mini_game_name: "",
+				mini_game_detail: "",
+				icon_url: "",
+				icon_index: 0,
+				channels: [],
+				show_pos: [],
+				promote_level: 3,
+				sort_level: 0,
+				stay_time: 20,
+				award: 100,
+				input_key: false,
+				input_flag: false,
+			}
+		}
+		function copy_sell_cfg(cfg1, cfg2) {
+			cfg1.mini_app_id = cfg2.mini_app_id
+			cfg1.mini_game_id = cfg2.mini_game_id
+			cfg1.mini_game_path = cfg2.mini_game_path
+			cfg1.mini_game_name = cfg2.mini_game_name
+			cfg1.mini_game_detail = cfg2.mini_game_detail
+			cfg1.icon_url = cfg2.icon_url
+			cfg1.icon_index = cfg2.icon_index
+			if (Array.isArray(cfg2.channels)) {
+				cfg1.channels = cfg2.channels
+			} else {
+				cfg1.channels = str2array(cfg2.channels, ";")
+			}
+			if (Array.isArray(cfg2.show_pos)) {
+				cfg1.show_pos = cfg2.show_pos
+			} else {
+				cfg1.show_pos = int2array(cfg2.show_pos)
+			}
+			cfg1.promote_level = cfg2.promote_level
+			cfg1.sort_level = cfg2.sort_level
+			cfg1.stay_time = cfg2.stay_time
+			cfg1.award = cfg2.award
+		}
+		function get_last_sort_level() {
+			var max = 0
+			for (var i = 0; i < g_SellCfg.tableData.length; i++) {
+				if (g_SellCfg.tableData[i].sort_level > max) {
+					max = g_SellCfg.tableData[i].sort_level
+				}
+			}
+			return max+1
+		}
+		function get_all_channels() {
+			var channels = [{value: "all", label: "全渠道"}]
+			for (var gameId in g_gameChan) {
+				for (var chan in g_gameChan[gameId]) {
+					channels.push({value: g_gameChan[gameId][chan], label: chan})
+				}
+			}
+			return channels
+		}
+		function adjust_table_height() {
+			if (g_SellCfg.tableData.length == 0) {
+				document.getElementById("sell_cfg").style.height="20%"
+			} else {
+				document.getElementById("sell_cfg").style.height="100%"
+			}
+		}
+	</script>
+</head>
+
+<body onload="body_onload()">
+	<div id="sell_cfg" style="text-align:center">
+		<el-table :data="tableData" style="width:100%;" :max-height="mHeight">
+			<span slot="empty">
+				<i class="el-icon-info"></i> 请运营小伙伴添加数据
+			</span>
+			<el-table-column label="小程序appid" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-input v-if="scope.row.input_key" v-model="scope.row.mini_app_id"></el-input>
+					<span v-else v-text="scope.row.mini_app_id"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="小游戏appid" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-input v-if="scope.row.input_key" v-model="scope.row.mini_game_id"></el-input>
+					<span v-else v-text="scope.row.mini_game_id"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="小游戏路径" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-input v-if="scope.row.input_flag" v-model="scope.row.mini_game_path"></el-input>
+					<span v-else v-text="scope.row.mini_game_path"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="小游戏名称" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-input v-if="scope.row.input_flag" v-model="scope.row.mini_game_name"></el-input>
+					<span v-else v-text="scope.row.mini_game_name"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="小游戏描述" width="300px" align="center">
+				<template slot-scope="scope">
+					<el-input v-if="scope.row.input_flag" type="textarea" v-model="scope.row.mini_game_detail" :autosize="{minRows: 2, maxRows: 4}"></el-input>
+					<span v-else v-text="scope.row.mini_game_detail"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="图标" width="150px" align="center">
+				<template slot-scope="scope">
+					<el-upload v-if="scope.row.input_flag"
+					  :ref="'upload'+scope.$index"
+			          action=""
+			          :http-request='function(content){return uploadRequest(scope.$index, content)}'
+			          :on-change="function(file, filelist){return onchangeIcon(scope.$index, file, filelist)}"
+			          :auto-upload="false"
+			          :show-file-list="false"
+			          class="avatar-uploader">
+			          <img v-if="scope.row.icon_url" :src="scope.row.icon_url" class="avatar">
+			          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+			        </el-upload>
+			        <el-image v-else :src="scope.row.icon_url" :preview-src-list="[scope.row.icon_url]" class="avatar"></el-image>
+				</template>
+			</el-table-column>
+			<el-table-column label="角标" width="120px" align="center">
+				<template slot-scope="scope">
+					<el-select v-if="scope.row.input_flag" v-model="scope.row.icon_index">
+					    <el-option
+					      v-for="item in icon_index_options"
+					      :key="item.value"
+					      :label="item.label"
+					      :value="item.value">
+					    </el-option>
+					</el-select>
+					<span v-else v-text="getLabelByVal(icon_index_options, scope.row.icon_index)"></span>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="APP渠道号" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-select v-if="scope.row.input_flag" v-model="scope.row.channels" @change='function(v){return channelChanged(scope.$index, v)}' multiple clearable placeholder="请选择APP渠道号">
+					    <el-option
+					      v-for="item in channel_options"
+					      :key="item.value"
+					      :label="item.label"
+					      :value="item.value">
+					    </el-option>
+					 </el-select>
+					 <el-tag v-else
+					 	v-for="tag in scope.row.channels"
+					 	:key="tag"
+					 	v-text="getLabelByVal(channel_options, tag)">
+					</el-tag>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="展示位置" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-select v-if="scope.row.input_flag" v-model="scope.row.show_pos" multiple clearable placeholder="请选择展示位置">
+					    <el-option
+					      v-for="item in show_options"
+					      :key="item.value"
+					      :label="item.label"
+					      :value="item.value">
+					    </el-option>
+					 </el-select>
+					 <el-tag v-else
+					 	v-for="tag in scope.row.show_pos"
+					 	:key="tag"
+					 	v-text="getLabelByVal(show_options, tag)">
+					</el-tag>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="推广级别" width="120px" align="center">
+				<template slot-scope="scope">
+					<el-select v-if="scope.row.input_flag" v-model="scope.row.promote_level">
+					    <el-option
+					      v-for="item in prom_options"
+					      :key="item.value"
+					      :label="item.label"
+					      :value="item.value">
+					    </el-option>
+					 </el-select>
+					<span v-else v-text="getLabelByVal(prom_options, scope.row.promote_level)"></span>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="排序级别" width="100px" align="center">
+				<template slot-scope="scope">
+					<el-input-number v-if="scope.row.input_flag" v-model="scope.row.sort_level" :min="1" size="small" controls-position="right" style="width:90px"></el-input-number>
+					<span v-else v-text="scope.row.sort_level"></span>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="试玩时长(s)" width="110px" align="center">
+				<template slot-scope="scope">
+					<el-input-number v-if="scope.row.input_flag" v-model="scope.row.stay_time" :min="5" :step="5" size="small" controls-position="right" style="width:100px"></el-input-number>
+					<span v-else v-text="scope.row.stay_time"></span>
+		        </template>
+		    </el-table-column>
+			<el-table-column label="奖励(红包券)" width="120px" align="center">
+				<template slot-scope="scope">
+					<el-input-number v-if="scope.row.input_flag" v-model="scope.row.award" :min="10" :step="10" size="small" controls-position="right" style="width:110px"></el-input-number>
+					<span v-else v-text="scope.row.award"></span>
+		        </template>
+			</el-table-column>
+			<el-table-column label="操作" width="200px" align="center">
+				<template slot-scope="scope">
+					<el-button v-if="!scope.row.input_flag" @click.native.prevent="willModRow(scope.$index)" size="mini">修改</el-button>
+					<el-button v-else-if="scope.row.input_key" @click.native.prevent="addRow(scope.$index)" size="mini">确定</el-button>
+					<el-button v-else @click.native.prevent="modRow(scope.$index)" size="mini">确定</el-button>
+					<el-button v-if="!scope.row.input_key&&scope.row.input_flag" @click.native.prevent="undoRow(scope.$index)" size="mini">撤销</el-button>
+					<el-button v-else @click.native.prevent="delRow(scope.$index)" type="danger" size="mini">删除</el-button>
+				</template>
+			</el-table-column>
+		</el-table>
+		<div style="margin-top: 20px">
+			<el-button type="primary" round icon="el-icon-plus" @click="willAddRow()" style="width:20%"></el-button>
+		</div>
+	</div>
+	<style>
+		.avatar-uploader .el-upload {
+			border: 1px dashed #d9d9d9;
+			border-radius: 6px;
+			cursor: pointer;
+			position: relative;
+			overflow: hidden;
+		}
+		.avatar-uploader .el-upload:hover {
+			border-color: #409EFF;
+		}
+		.avatar-uploader-icon {
+			font-size: 28px;
+			color: #8c939d;
+			width: 100px;
+			height: 100px;
+			line-height: 100px;
+			text-align: center;
+		}
+		.avatar {
+			width: 100px;
+			height: 100px;
+		}
+
+	</style>
+	<script>
+		var g_SellCfg = new Vue({el:'#sell_cfg',
+			data:{
+				mHeight: document.documentElement.clientHeight*0.9,
+				tableData:[],
+				tmpData: new Map(),
+				icon_index_options: [
+					{value: 1, label: '火爆'},
+					{value: 2, label: '酷炫'},
+					{value: 0, label: '无'},
+				],
+				channel_options: get_all_channels(),
+				show_options: [
+					{value: 1, label: '任务'},
+					{value: 2, label: '试玩'},
+				],
+				prom_options: [
+					{value: 0, label: '关闭'},
+					{value: 1, label: '高级'},
+					{value: 2, label: '中级'},
+					{value: 3, label: '普通'},
+				]
+			},
+			methods: {
+				getLabelByVal(options, val) {
+					for (var i = 0; i < options.length; i++) {
+						if (options[i].value == val) {
+							return options[i].label
+						}
+					}
+					return ""
+				},
+				channelChanged(index, val) {
+					for (var i = 0; i < val.length; i++) {
+						if (val[i] == "all") {
+							this.tableData[index].channels = ["all"]
+							break
+						}
+					}
+				},
+				willAddRow() {
+					console.log("will add row")
+					var cfg = new_sell_cfg()
+					cfg.input_key = true
+					cfg.input_flag = true
+					cfg.sort_level = get_last_sort_level()
+					this.tableData.push(cfg);
+					adjust_table_height()
+				},
+				willModRow(index) {
+					this.tableData[index].input_flag = true
+					var cfg = new_sell_cfg()
+					copy_sell_cfg(cfg, this.tableData[index])
+					this.tmpData[index] = cfg
+				},
+				undoRow(index) {
+					this.tableData[index].input_flag = false
+					copy_sell_cfg(this.tableData[index], this.tmpData[index])
+					this.tmpData.delete(index)
+				},
+				addRow(index) {
+					console.log("add row", index)
+					mini_app_id = encodeURIComponent(this.tableData[index].mini_app_id)
+					mini_game_id = encodeURIComponent(this.tableData[index].mini_game_id)
+					mini_game_path = encodeURIComponent(this.tableData[index].mini_game_path)
+					mini_game_name = encodeURIComponent(this.tableData[index].mini_game_name)
+					mini_game_detail = encodeURIComponent(this.tableData[index].mini_game_detail)
+					icon_index = encodeURIComponent(this.tableData[index].icon_index)
+					channels = encodeURIComponent(array2str(this.tableData[index].channels, ";"))
+					show_pos = encodeURIComponent(array2int(this.tableData[index].show_pos))
+					promote_level = encodeURIComponent(this.tableData[index].promote_level)
+					sort_level = encodeURIComponent(this.tableData[index].sort_level)
+					stay_time = encodeURIComponent(this.tableData[index].stay_time)
+					award = encodeURIComponent(this.tableData[index].award)
+					para = "mini_app_id=" + mini_app_id + "&mini_game_id=" + mini_game_id + "&mini_game_path=" + mini_game_path + "&mini_game_name=" + mini_game_name + "&mini_game_detail=" + mini_game_detail + "&icon_index=" + icon_index
+					para += "&channels=" + channels + "&show_pos=" + show_pos + "&promote_level=" + promote_level + "&sort_level="	+ sort_level + "&stay_time=" + stay_time + "&award=" + award
+
+					obj = this
+					post_req("sell_cfg_add", para, function(state, code, res) {
+						if (state == 4 && code == 200) {
+							if (res.substr(0, 7) == "[ERROR]") {
+					    		obj.$message.error(res)
+					    	} else {
+					    		obj.uploadIcon(index)
+					    	}
+						}
+						console.log("sell_cfg_add", state, code)
+					});
+				},
+				modRow(index) {
+					console.log("mod row", index)
+					mini_app_id = encodeURIComponent(this.tableData[index].mini_app_id)
+					mini_game_id = encodeURIComponent(this.tableData[index].mini_game_id)
+					para = "mini_app_id=" + mini_app_id + "&mini_game_id=" + mini_game_id
+					var other = ""
+					if (this.tableData[index].mini_game_path != this.tmpData[index].mini_game_path) {
+						mini_game_path = encodeURIComponent(this.tableData[index].mini_game_path)
+						other += "&mini_game_path=" + mini_game_path
+					}
+					if (this.tableData[index].mini_game_name != this.tmpData[index].mini_game_name) {
+						mini_game_name = encodeURIComponent(this.tableData[index].mini_game_name)
+						other += "&mini_game_name=" + mini_game_name
+					}
+					if (this.tableData[index].mini_game_detail != this.tmpData[index].mini_game_detail) {
+						mini_game_detail = encodeURIComponent(this.tableData[index].mini_game_detail)
+						other += "&mini_game_detail=" + mini_game_detail
+					}
+					if (this.tableData[index].icon_index != this.tmpData[index].icon_index) {
+						icon_index = encodeURIComponent(this.tableData[index].icon_index)
+						other += "&icon_index=" + icon_index
+					}
+					if (array2str(this.tableData[index].channels, ";") != array2str(this.tmpData[index].channels, ";")) {
+						channels = encodeURIComponent(array2str(this.tableData[index].channels, ";"))
+						other += "&channels=" + channels
+					}
+					if (array2int(this.tableData[index].show_pos) != array2int(this.tmpData[index].show_pos)) {
+						show_pos = encodeURIComponent(array2int(this.tableData[index].show_pos))
+						other += "&show_pos=" + show_pos
+					}
+					if (this.tableData[index].promote_level != this.tmpData[index].promote_level) {
+						promote_level = encodeURIComponent(this.tableData[index].promote_level)
+						other += "&promote_level=" + promote_level
+					}
+					if (this.tableData[index].sort_level != this.tmpData[index].sort_level) {
+						sort_level = encodeURIComponent(this.tableData[index].sort_level)
+						other += "&sort_level=" + sort_level
+					}
+					if (this.tableData[index].stay_time != this.tmpData[index].stay_time) {
+						stay_time = encodeURIComponent(this.tableData[index].stay_time)
+						other += "&stay_time=" + stay_time
+					}
+					if (this.tableData[index].award != this.tmpData[index].award) {
+						award = encodeURIComponent(this.tableData[index].award)
+						other += "&award=" + award
+					}
+					para += other
+
+					if (other == "") {
+						this.uploadIcon(index)
+					} else {
+						obj = this
+						post_req("sell_cfg_mod", para, function(state, code, res) {
+							if (state == 4 && code == 200) {
+								if (res.substr(0, 7) == "[ERROR]") {
+						    		obj.$message.error(res)
+						    	} else {
+						    		obj.uploadIcon(index)
+						    	}
+							}
+							console.log("sell_cfg_mod", state, code)
+						});
+					}
+				},
+				delRow(index) {
+					console.log("del row", index)
+					if (this.tableData[index].input_key == true) {
+						this.tableData.splice(index, 1)
+						adjust_table_height()
+						return
+					}
+					this.$confirm('删除后不可恢复, 是否继续?', '提示', {
+			          confirmButtonText: '确定',
+			          cancelButtonText: '取消',
+			          type: 'warning'
+			        }).then(() => {
+			        	mini_app_id = encodeURIComponent(this.tableData[index].mini_app_id)
+						mini_game_id = encodeURIComponent(this.tableData[index].mini_game_id)
+						para = "mini_app_id=" + mini_app_id + "&mini_game_id=" + mini_game_id
+						obj = this
+						post_req("sell_cfg_del", para, function(state, code, res) {
+							if (state == 4 && code == 200) {
+								if (res.substr(0, 7) == "[ERROR]") {
+						    		obj.$message.error(res)
+						    	} else {
+						    		obj.tableData.splice(index, 1)
+						    		obj.updateIconUrl(mini_game_id, "")
+									adjust_table_height()
+									obj.$message({
+							            type: 'success',
+							            message: '删除成功!'
+							        });
+						    	}
+							}
+							console.log("sell_cfg_del", state, code)
+						});
+			        }).catch(() => {
+			        	console.log("撤销删除")
+			        });
+				},
+				uploadIcon(index) {
+					row = this.tableData[index]
+		    		if (row.icon_url != "" && row.icon_url.substr(0, 4) != "http") {
+		    			this.$refs['upload'+index].submit()
+	            	} else {
+	            		row.input_key = false
+						row.input_flag = false
+	            	}
+				},
+				onchangeIcon(index, file, fileList) {
+	                var _this = this
+	                var event = event || window.event
+	                var file = event.target.files[0]
+	                var reader = new FileReader()
+	                reader.onload = function(e) {
+	                  _this.tableData[index].icon_url = e.target.result
+	                }
+	                reader.readAsDataURL(file)
+	            },
+	            uploadRequest(index, content) {
+	            	console.log("uploadRequest", index)
+	  				var httpRequest = new XMLHttpRequest()
+		            httpRequest.open("POST", "upload", true)
+
+		            var formData = new FormData()
+		            formData.append("mini_app_id", this.tableData[index].mini_app_id)
+		            formData.append("mini_game_id", this.tableData[index].mini_game_id)
+		            formData.append("file", content.file)
+		            httpRequest.send(formData)
+
+		            obj = this
+		            httpRequest.onreadystatechange = function() {
+		                if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+		                	res = httpRequest.responseText
+		                	if (res.substr(0, 7) == "[ERROR]") {
+		                		obj.$message.error(res)
+					    	} else {
+					    		//obj.updateIconUrl(obj.tableData[index].mini_game_id, res)
+					    		obj.tableData[index].input_key = false
+								obj.tableData[index].input_flag = false
+					    	}
+		                }
+		            };
+	            },
+	            updateIconUrl(mini_game_id, url) {
+	            	for (var i = 0; i < this.tableData.length; i++) {
+	            		if (this.tableData[i].mini_game_id == mini_game_id) {
+	            			if (url == "") {
+	            				this.tableData[i].icon_url = ""
+	            			} else {
+	            				this.tableData[i].icon_url = url + "?v=" + new Date().getTime()
+	            			}
+	            		}
+	            	}
+	            }
+	          }
+			})
+		</script>
+</body>
+
+</html>

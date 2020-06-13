@@ -1,0 +1,40 @@
+body {
+	margin: 0px;
+}	
+.mytab {
+	float: left; 
+	width: 10%; 
+	height: 100%;
+	background-color: #1f2d3d; 
+	color: #aaa; 				
+}
+.tab_item {				
+	height: 20px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	text-align: center;								
+}
+.tab_item:hover {
+	background-color: #1f2d66;
+	cursor: hand;
+}
+.content {
+	float: right;
+	width: 90%;
+	height: 100%;
+}
+.tab_page {
+	background-color: #24427d;
+	color: #fff;		
+	height: 12%;	
+	padding: 10px;	
+	box-sizing: border-box; 
+}
+.res {
+	background-color: #fff;
+	color: #000;	
+	height: 88%;
+	padding: 5px;	
+	box-sizing: border-box; 
+	overflow: auto;
+}

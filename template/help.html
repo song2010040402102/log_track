@@ -1,0 +1,130 @@
+<html>
+<head>	
+	<link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">		
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>	
+	<script src="https://unpkg.com/element-ui@2.13.0/lib/index.js"></script>
+	<script type="text/javascript">
+		function getQueryVariable(variable){
+			var query = window.location.search.substring(1)
+			var vars = query.split("&")
+			for (var i=0;i<vars.length;i++) {
+				var pair = vars[i].split("=")
+				if(pair[0] == variable) {
+					return pair[1]
+				}
+			}
+			return ""
+		}
+		function body_onload() {			
+			g_app.select_item(getQueryVariable("item"))			
+		}
+	</script>
+</head>
+<body onload="body_onload()">	
+	<div id="app">
+		<el-menu :default-active="default_sel" :default-openeds="default_opens" class="el-menu-vertical-demo" @select="on_select">
+			<el-menu-item index="Outline">
+				<i class="el-icon-cold-drink"></i>
+				<span slot="title">介绍</span>
+			</el-menu-item>
+			<el-submenu index="SrcData">
+				<template slot="title">
+					<i class="el-icon-lollipop"></i>
+					<span slot="title">原始数据</span>
+				</template>
+				<el-menu-item index="Flow">说明</el-menu-item>
+				<el-menu-item index="WxCreate">微信创建(WxCreate)</el-menu-item>
+				<el-menu-item index="Create">游戏内创建(Create)</el-menu-item>
+				<el-menu-item index="Login">登录(Login)</el-menu-item>
+				<el-menu-item index="Logout">登出(Logout)</el-menu-item>
+				<el-menu-item index="Online">在线数统计(Online)</el-menu-item>				
+				<el-menu-item index="AdToMinGameFlow">进入卖量小游戏(AdToMinGameFlow)</el-menu-item>
+				<el-menu-item index="AdToMinGameResultFlow">退出卖量小游戏(AdToMinGameResultFlow)</el-menu-item>
+				<el-menu-item index="DiamondFlow">钻石变更(DiamondFlow)</el-menu-item>				
+				<el-menu-item index="GoldFlow">金币变更(GoldFlow)</el-menu-item>				
+				<el-menu-item index="FangkaFlow">房卡变更(FangkaFlow)</el-menu-item>	
+				<el-menu-item index="VoucherFlow">代金券变更(TableStatFlow)</el-menu-item>	
+				<el-menu-item index="EnrollVoucherFlow">报名券变更(TableStatFlow)</el-menu-item>	
+				<el-menu-item index="StarIntegalFlow">段位分变更(StarIntegalFlow)</el-menu-item>		
+				<el-menu-item index="ZjjIntegalFlow">纸巾机积分变更(ZjjIntegalFlow)</el-menu-item>		
+				<el-menu-item index="TableStatFlow">记牌器变更(TableStatFlow)</el-menu-item>						
+				<el-menu-item index="VipExpFlow">VIP等级变更(TableStatFlow)</el-menu-item>	
+				<el-menu-item index="WheelFlow">大转盘变更(TableStatFlow)</el-menu-item>	
+				<el-menu-item index="MaterialFlow">材料变更(TableStatFlow)</el-menu-item>	
+				<el-menu-item index="RedbagConsumeFlow">红包消耗(RedbagConsumeFlow)</el-menu-item>	
+				<el-menu-item index="RedBagFlow">红包产出(RedBagFlow)</el-menu-item>						
+				<el-menu-item index="TeleBillFlow">话费变更(TeleBillFlow)</el-menu-item>					
+				<el-menu-item index="TaskFlow">触发任务(TaskFlow)</el-menu-item>		
+				<el-menu-item index="TaskFinishFlow">完成任务(TaskFinishFlow)</el-menu-item>		
+				<el-menu-item index="TaskDrawFlow">领取任务(TaskDrawFlow)</el-menu-item>		
+				<el-menu-item index="PayFlow">付费(PayFlow)</el-menu-item>		
+				<el-menu-item index="IncomeFlow">提现(IncomeFlow)</el-menu-item>		
+				<el-menu-item index="IncomeTelebillFlow">提话费(IncomeTelebillFlow)</el-menu-item>						
+				<el-menu-item index="DrawCashFlow">提现(DrawCashFlow)</el-menu-item>						
+				<el-menu-item index="RoomFlow">玩家-房间(RoomFlow)</el-menu-item>		
+				<el-menu-item index="RealRoomFlow">房间(RealRoomFlow)</el-menu-item>						
+				<el-menu-item index="RoomNoBenifitFlow">玩家-房间无收益(RoomNoBenifitFlow)</el-menu-item>		
+				<el-menu-item index="RoomMergePlayFlow">强控房间(RoomMergePlayFlow)</el-menu-item>		
+				<el-menu-item index="RoomAutoFlow">托管(RoomAutoFlow)</el-menu-item>		
+				<el-menu-item index="MatchFlow">比赛场(MatchFlow)</el-menu-item>		
+				<el-menu-item index="MatchResultFlow">比赛场结果(MatchResultFlow)</el-menu-item>		
+				<el-menu-item index="GrandPrixFlow">大奖赛(GrandPrixFlow)</el-menu-item>		
+				<el-menu-item index="GrandPrixResultFlow">大奖赛结果(GrandPrixResultFlow)</el-menu-item>		
+				<el-menu-item index="VideoFlow">视频(VideoFlow)</el-menu-item>						
+				<el-menu-item index="WeChatSharePicFlow">微信分享图(WeChatSharePicFlow)</el-menu-item>		
+				<el-menu-item index="WeChatShareClickFlow">点击微信分享(WeChatShareClickFlow)</el-menu-item>		
+				<el-menu-item index="WeChatShareLoginFlow">通过微信分享登录(WeChatShareLoginFlow)</el-menu-item>		
+			</el-submenu>
+			<el-menu-item index="CondExp">
+				<i class="el-icon-ice-cream"></i>
+				<span slot="title">条件表达式</span>
+			</el-menu-item>
+			<el-menu-item index="ItemExp">
+				<i class="el-icon-coffee"></i>
+				<span slot="title">指标表达式</span>
+			</el-menu-item>			
+			<el-menu-item index="Channel">
+				<i class="el-icon-sugar"></i>
+				<span slot="title">渠道号</span>
+			</el-menu-item>
+			<el-menu-item index="ThirdParty">
+				<i class="el-icon-grape"></i>
+				<span slot="title">上传的第三方数据</span>
+			</el-menu-item>
+		</el-menu>
+		<iframe id="content" src="" style="float:right;width:87%;height:100%;border:none;"></iframe>
+	</div>	
+	<style>
+		.el-menu-vertical-demo:not(.el-menu--collapse) {
+			float: left;
+			width: 12%;
+			height: 100%;
+			overflow: auto;
+		}
+	</style>
+	<script>		
+		var g_app = new Vue({el:'#app',			
+			data: {
+				default_sel: "Outline",
+				default_opens: [],
+			},
+			methods: {	
+				select_item(item) {					
+					if (item != "") {
+						default_opens = []
+						var s = item.split(";")						
+						for (var i = 0; i < s.length-1; i++) {							
+							default_opens.push(s[i])
+						}
+						this.default_sel = s[s.length-1]
+					}
+					this.on_select(this.default_sel)				
+				},
+				on_select(index) {	
+					document.getElementById("content").src = "doc/"+index+".html?v=" + new Date().getTime()				
+				}
+			}
+		})
+	</script>
+</body>
+</html>

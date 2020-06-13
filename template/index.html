@@ -1,0 +1,468 @@
+<html>
+<head>	
+	<link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.0/lib/theme-chalk/index.css">	
+	<link rel="stylesheet" type="text/css" href="html/css/main.css?v=1">
+	<style type="text/css">				
+	</style>		 
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>	
+	<script src="https://unpkg.com/element-ui@2.13.0/lib/index.js"></script>
+	<script type="text/javascript" src="html/js/main.js?v=1"></script>
+	<script type="text/javascript" src="html/js/channel.js?v=1"></script>
+	<script type="text/javascript">				
+		function body_onload() {				
+			change_game(g_gameId.value)					
+			click_tab("t1") 			
+		}
+
+		function change_game(val) {
+			var gameId = parseInt(val, 10)			
+			g_chanSel.options = []
+			g_chanSel.options.push({value: 'all', label: '全渠道'})
+			if (gameId in g_gameChan) {				
+				for (var chan in g_gameChan[gameId]) {
+					g_chanSel.options.push({value: g_gameChan[gameId][chan], label: chan})					
+				}					
+			}
+			g_chanSel.value = 'all'			
+			change_channel(g_chanSel.value)
+		}
+
+		function change_channel(val) {			
+			g_channel.input = val
+		}
+
+		function date2str(date) {
+			var year = date.getFullYear()
+			var month = date.getMonth() + 1
+			if (month >= 0 && month <= 9) {
+				month = "0" + month
+			}
+			var day = date.getDate()
+			if (day >= 0 && day <= 9) {
+				day = "0" + day
+			}
+			return year + "-" + month + "-" + day
+		}
+
+		function time2str(time) {
+			var hour = time.getHours()
+			if (hour >= 0 && hour <= 9) {
+				hour = "0" + hour
+			}
+			var min = time.getMinutes()
+			if (min >= 0 && min <= 9) {
+				min = "0" + min
+			}
+			var sec = time.getSeconds()
+			if (sec >= 0 && sec <= 9) {
+				sec = "0" + sec
+			}
+			return date2str(time) + " " + hour + ":" + min + ":" + sec
+		}
+
+		function show_item(obj, output) {	
+			gameId = g_gameId.value
+			item = encodeURIComponent(g_item.value)
+			items = encodeURIComponent(g_items.input)
+			start = encodeURIComponent(date2str(g_date.value[0]))
+			end = encodeURIComponent(date2str(g_date.value[1]))
+			channel = encodeURIComponent(g_channel.input)
+			device = encodeURIComponent(g_device.value)		
+			para = "game_id=" + gameId + "&item=" + item + "&items=" + items + "&start=" + start + "&end=" + end
+			para += "&channel="	+ channel + "&device=" + device + "&output=" + output
+			console.log("show_item: " + para)
+			
+			obj.load = true			
+			post_req("result", para, function(state, code, res) {
+				if (state == 4 && code == 200) {
+					if (res.substr(0, 7) == "[ERROR]") {		    		
+			    		obj.$message.error(res)
+			    	} else if (output == "web") {
+			    		document.getElementById("show_res").innerHTML = res
+			    	} else if (output == "xlsx") {
+			    		window.open(res)
+			    	}
+				}
+				console.log("show_item", state, code)
+				obj.load = false
+			});
+		}
+
+		function show_flow(obj, output) {
+			gameId = g_gameId.value
+			flow = encodeURIComponent(g_flow.value)			
+			start = encodeURIComponent(time2str(g_time_flow.value[0]))
+			end = encodeURIComponent(time2str(g_time_flow.value[1]))
+			role_name = encodeURIComponent(g_roleName.input)
+			filter = encodeURIComponent(g_filter.input)		
+			para = "game_id=" + gameId + "&flow=" + flow + "&start_time=" + start + "&end_time=" + end
+			para += "&role_name=" + role_name + "&filter=" + filter + "&output=" + output
+			console.log("show_flow: " + para)
+
+			obj.load = true			
+			post_req("show", para, function(state, code, res) {
+				if (state == 4 && code == 200) {
+					if (res.substr(0, 7) == "[ERROR]") {
+			    		obj.$message.error(res)
+			    	} else if (output == "web") {
+			    		document.getElementById("show_res").innerHTML = res
+			    	} else if (output == "xlsx") {
+			    		window.open(res)
+			    	}
+				}
+				console.log("show_flow", state, code)
+				obj.load = false
+			});
+		}
+
+		function show_relation(obj, output) {
+			gameId = g_gameId.value
+			item = encodeURIComponent(g_relItem.value)			
+			start = encodeURIComponent(time2str(g_time_rel.value[0]))
+			end = encodeURIComponent(time2str(g_time_rel.value[1]))			
+			para = "game_id=" + gameId + "&item=" + item + "&start_time=" + start + "&end_time=" + end + "&output=" + output			
+			console.log("show_relation: " + para)
+
+			obj.load = true			
+			post_req("relation", para, function(state, code, res) {
+				if (state == 4 && code == 200) {
+					if (res.substr(0, 7) == "[ERROR]") {
+			    		obj.$message.error(res)
+			    	} else if (output == "web") {
+			    		document.getElementById("show_res").innerHTML = res
+			    	} else if (output == "xlsx") {
+			    		window.open(res)
+			    	}
+				}
+				console.log("show_relation", state, code)
+				obj.load = false
+			});			
+		}
+	</script>
+</head>
+
+<body onload="body_onload()">	
+	<div class="mytab">		
+		<div id="game_id">
+			<el-select v-model="value" @change="handle_change">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>
+		</div>
+		<div id="t1" class="tab_item" onclick="click_tab(this.id)">指标查询</div>
+		<div id="t2" class="tab_item" onclick="click_tab(this.id)">原始数据查询</div>		
+		<div id="t3" class="tab_item" onclick="click_tab(this.id)">师徒查询</div>
+		<div id="t4" class="tab_item" onclick="click_tab(this.id)">上传第三方数据</div>
+		<div id="t5" class="tab_item" onclick="window.open('https://online.xcx.snsfun.com/chess_plat')">小游戏卖量管理</div>		
+		<div id="t6" class="tab_item" onclick="window.open('html/help.html')">帮助文档</div>		
+	</div>
+	<div class="content">		
+		<div id="p1" class="tab_page">				
+			<el-select id="item" v-model="value" @change="handle_change" style="width:20%;height:40%">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>					
+			<el-input id="items" v-model="input" placeholder="指标表达式" clearable style="margin-left:1%;width:75%;height:40%">		
+			</el-input>		
+			<a href="html/help.html?item=ItemExp" target="view_window" style="color:#fff">?</a>	
+			<el-date-picker
+				id="date"				
+				v-model="value"
+				type="daterange"
+				:picker-options="pickerOptions"
+				range-separator="至"
+				start-placeholder="开始日期"
+				end-placeholder="结束日期"
+				style="width:20%;height:45%;margin-top:15px">
+			</el-date-picker>			
+			<el-select id="chan_sel" v-model="value" @change="handle_change" style="margin-left:1%;width:10%;height:40%">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>
+			<el-input id="channel" v-model="input" style="width:25%;height:40%">		
+			</el-input>				
+ 			<a href="html/help.html?item=Channel" target="view_window" style="color:#fff">?</a>
+ 			<el-select id="device" v-model="value" @change="handle_change" style="width:10%;height:40%">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>
+			<el-button id="btn_item_find" type="primary" :loading="load" @click='click_item_find' style="margin-left:1%">查询</el-button>					
+			<el-button id="btn_item_download" type="primary" :loading="load" @click='click_item_download'>下载</el-button>						
+		</div>
+		<div id="p2" class="tab_page">			
+			<el-select id="flow" v-model="value" placeholder="请选择流向" style="width:10%;height:40%">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>				
+			</el-select>	
+			<a href="html/help.html?item=SrcData;Flow" target="view_window" style="color:#fff">?</a>
+			<el-date-picker
+				id="time_flow"
+				v-model="value"
+				type="datetimerange"
+				:picker-options="pickerOptions"
+				range-separator="至"
+				start-placeholder="开始时间"
+				end-placeholder="结束时间"
+				style="width:25%;height:45%;margin-left:1%">
+			</el-date-picker>	
+			<el-input id="role_name" v-model="input" placeholder="玩家昵称" clearable style="margin-left:1%;width:20%;height:40%">		
+			</el-input>	
+			<el-input id="filter" v-model="input" placeholder="条件表达式" clearable style="margin-top:11px;width:50%;height:40%">		
+			</el-input>								
+			<a href="html/help.html?item=CondExp" target="view_window" style="color:#fff">?</a>
+			<el-button id="btn_flow_find" type="primary" :loading="load" @click='click_flow_find' style="margin-left:1%">查询</el-button>					
+			<el-button id="btn_flow_download" type="primary" :loading="load" @click='click_flow_download'>下载</el-button>			
+		</div>		
+		<div id="p3" class="tab_page">	
+			<el-select id="rel_item" v-model="value" style="width:20%;height:40%">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>					
+			<el-date-picker
+				id="time_rel"
+				v-model="value"
+				type="datetimerange"
+				:picker-options="pickerOptions"
+				range-separator="至"
+				start-placeholder="开始时间"
+				end-placeholder="结束时间"
+				style="width:25%;height:45%;margin-left:1%">
+			</el-date-picker>	
+			<el-button id="btn_rel_find" type="primary" :loading="load" @click='click_rel_find' style="margin-left:1%">查询</el-button>					
+			<el-button id="btn_rel_download" type="primary" :loading="load" @click='click_rel_download'>下载</el-button>			
+		</div>
+		<div id="p4" class="tab_page">
+			<el-select id="third_party" v-model="value" style="width:10%;height:40%;float:left">
+				<el-option
+					v-for="item in options"
+					:key="item.value"
+					:label="item.label"
+					:value="item.value">
+				</el-option>
+			</el-select>			            
+            <el-upload id="upload_tp" ref="upload" action="" :http-request='uploadRequest' :on-change="handleChange" :auto-upload="false" :show-file-list="false" style="float:left;margin-left:15px">
+	            <el-button slot="trigger" type="primary">选取文件</el-button>	            
+	            <el-button type="success" @click="submitUpload" style="margin-left:10px;">上传到服务器</el-button>	            
+	            <div slot="tip" class="el-upload__tip">只支持xlsx文件，且不超过100M</div>
+	            <a id="file_tip" style="cursor:text"></a>
+	        </el-upload>
+		</div>
+		<div id="show_res" class="res"></div>		
+	</div>	
+	<script>    		
+  		var g_gameId = new Vue(GetSelVue('#game_id', [{value: 101, label: '5151麻将'},
+					{value: 102, label: '运来麻将'},
+					{value: 103, label: '运来麻将赚金板'},
+					{value: 201, label: '乐游斗地主'},
+					{value: 202, label: '乐趣斗地主'},
+					{value: 203, label: '小米斗地主'},
+					{value: 204, label: '斗地主测试服'},
+					{value: 205, label: '斗地主微信测试服'},
+					{value: 206, label: '斗地主微信正式服'},
+					{value: 901, label: '旭开发服'}], 203, change_game))
+  		
+		var g_item = new Vue(GetSelVue('#item', [{value: 'user', label: '用户增长统计'},
+			  		{value: 'create', label: '创建、DAU、裂变统计(a)'},
+			  		{value: 'pay', label: '付费统计(b)'},
+			  		{value: 'all_play', label: '所有用户打牌统计(c)'},
+			  		{value: 'new_play', label: '新增用户打牌统计(d)'},
+			  		{value: 'keep_alive', label: '用户留存统计(e)'},
+			  		{value: 'room_rule', label: '房间和玩法统计(f)'},
+			  		{value: 'all_online_time', label: '所有用户在线时长统计(g)'},
+			  		{value: 'new_online_time', label: '新增用户在线时长统计(h)'},
+			  		{value: 'video', label: '看视频统计(i)'},
+			  		{value: 'gold_winlose', label: '金币场不同玩法不同档位胜率相关统计(j)'},
+			  		{value: 'gold_winlose_big', label: '金币场不同玩法不同档位（大胜）胜率相关统计(k)'},
+			  		{value: 'place_winlose', label: '排位赛不同玩法不同档位胜率相关统计(l)'},
+			  		{value: 'match', label: '比赛场红包数据统计(m)'},
+			  		{value: 'grand_prix', label: '大奖赛数据统计(n)'},
+			  		{value: 'other_mini_game', label: '试玩其他小游戏数据统计(o)'},
+			  		{value: 'share_pic', label: '各分享图流入新用户数据统计(p)'},
+			  		{value: 'ddz_merge_play', label: '斗地主强控数据统计(q)'},
+			  		{value: 'cash', label: '提现'},
+			  		{value: 'cash_summary', label: '提现汇总(s)'},
+			  		{value: 'redbag_output', label: '红包产出(t)'},
+			  		{value: 'redbag_consume', label: '红包消耗(u)'},
+			  		{value: 'gold_video', label: '金币场玩家观看视频统计'},
+			  		{value: 'zjj_integal_output', label: '纸巾机积分产出(w)'},
+			  		{value: 'zjj_integal_consume', label: '纸巾机积分消耗(x)'},
+			  		{value: 'diamond_output', label: '钻石产出(y)'},
+			  		{value: 'diamond_consume', label: '钻石消耗(z)'},
+			  		{value: 'gold_output', label: '金币产出(aa)'},
+			  		{value: 'gold_consume', label: '金币消耗(ab)'},
+			  		{value: 'enroll_voucher_output', label: '报名券产出(ac)'},
+			  		{value: 'enroll_voucher_consume', label: '报名券消耗(ad)'},
+			  		{value: 'star_integal_output', label: '段位分产出(ae)'},
+			  		{value: 'star_integal_consume', label: '段位分消耗(af)'},
+			  		{value: 'wheel_output', label: '大转盘次数产出(ag)'},
+			  		{value: 'wheel_consume', label: '大转盘次数消耗(ah)'},
+			  		{value: 'material_output', label: '材料产出(ai)'},
+			  		{value: 'material_consume', label: '材料消耗(aj)'},
+			  		{value: 'task', label: '任务统计(ak)'},
+			  		{value: 'advertising', label: '广告统计(al)'},
+			  		{value: 'land_page', label: '落地页统计(am)'},
+			  		{value: 'trans_app', label: 'app转化统计(an)'},
+			  		{value: 'sell_count', label: '小游戏卖量统计(ao)'},
+			  		{value: 'sys_user', label: 'sys_user(na)'}], 'user', null))		
+
+		var g_items = new Vue({el:'#items', data:{input:''}})
+
+  		var datescs = [{text:"最近三天", start: 3600*1000*24*2, end: 0},
+				  		{text:"最近一周", start: 3600*1000*24*6, end: 0},
+				  		{text:"最近两周", start: 3600*1000*24*13, end: 0},
+				  		{text:"最近一月", start: 3600*1000*24*29, end: 0},
+				  		{text:"最近三月", start: 3600*1000*24*89, end: 0}]
+		var timescs = [{text:"最近1小时", start: 3600*1000, end: 0},
+						{text:"最近2小时", start: 3600*1000*2, end: 0},
+						{text:"最近3小时", start: 3600*1000*3, end: 0},
+						{text:"最近6小时", start: 3600*1000*6, end: 0},
+						{text:"最近12小时", start: 3600*1000*12, end: 0},
+						{text:"最近1天", start: 3600*1000*24, end: 0},
+						{text:"最近2天", start: 3600*1000*48, end: 0},
+						{text:"最近3天", start: 3600*1000*72, end: 0},
+						{text:"最近7天", start: 3600*1000*168, end: 0},]
+		var g_date = new Vue(GetDateVue('#date', datescs))   
+		var g_time_flow = new Vue(GetDateVue('#time_flow', timescs))   
+		var g_time_rel = new Vue(GetDateVue('#time_rel', timescs))  
+		
+  		var g_chanSel = new Vue(GetSelVue('#chan_sel', [], '', change_channel)) 	
+
+  		var g_channel = new Vue({el:'#channel', data:{input:''}})	
+
+  		var g_device = new Vue(GetSelVue('#device', [{value: 'all', label: '所有设备'},
+					{value: 'android', label: '安卓手机'},
+					{value: 'ios', label: '苹果手机'}], 'all', null))
+
+  		var g_flow = new Vue(GetSelVue('#flow', [{value: 'User', label: 'User'},
+  					{value: 'WxCreate', label: 'WxCreate'},
+					{value: 'Create', label: 'Create'},
+					{value: 'Login', label: 'Login'},
+					{value: 'Logout', label: 'Logout'},
+					{value: 'Online', label: 'Online'},
+					{value: 'AdToMinGameFlow', label: 'AdToMinGameFlow'},
+					{value: 'AdToMinGameResultFlow', label: 'AdToMinGameResultFlow'},
+					{value: 'DiamondFlow', label: 'DiamondFlow'},
+					{value: 'GoldFlow', label: 'GoldFlow'},
+					{value: 'FangkaFlow', label: 'FangkaFlow'},
+					{value: 'VoucherFlow', label: 'VoucherFlow'},
+					{value: 'EnrollVoucherFlow', label: 'EnrollVoucherFlow'},
+					{value: 'StarIntegalFlow', label: 'StarIntegalFlow'},
+					{value: 'ZjjIntegalFlow', label: 'ZjjIntegalFlow'},
+					{value: 'TableStatFlow', label: 'TableStatFlow'},
+					{value: 'VipExpFlow', label: 'VipExpFlow'},
+					{value: 'WheelFlow', label: 'WheelFlow'},
+					{value: 'MaterialFlow', label: 'MaterialFlow'},
+					{value: 'RedbagConsumeFlow', label: 'RedbagConsumeFlow'},
+					{value: 'TeleBillFlow', label: 'TeleBillFlow'},
+					{value: 'TaskFlow', label: 'TaskFlow'},
+					{value: 'TaskFinishFlow', label: 'TaskFinishFlow'},
+					{value: 'TaskDrawFlow', label: 'TaskDrawFlow'},
+					{value: 'PayFlow', label: 'PayFlow'},
+					{value: 'IncomeFlow', label: 'IncomeFlow'},
+					{value: 'IncomeTelebillFlow', label: 'IncomeTelebillFlow'},
+					{value: 'RedBagFlow', label: 'RedBagFlow'},
+					{value: 'DrawCashFlow', label: 'DrawCashFlow'},
+					{value: 'RoomFlow', label: 'RoomFlow'},
+					{value: 'RealRoomFlow', label: 'RealRoomFlow'},
+					{value: 'RoomNoBenifitFlow', label: 'RoomNoBenifitFlow'},
+					{value: 'RoomMergePlayFlow', label: 'RoomMergePlayFlow'},
+					{value: 'RoomAutoFlow', label: 'RoomAutoFlow'},
+					{value: 'MatchFlow', label: 'MatchFlow'},
+					{value: 'MatchResultFlow', label: 'MatchResultFlow'},
+					{value: 'GrandPrixFlow', label: 'GrandPrixFlow'},
+					{value: 'GrandPrixResultFlow', label: 'GrandPrixResultFlow'},
+					{value: 'VideoStartFlow', label: 'VideoStartFlow'},
+					{value: 'VideoEndFlow', label: 'VideoEndFlow'},
+					{value: 'VideoClickFlow', label: 'VideoClickFlow'},
+					{value: 'VideoLoginFlow', label: 'VideoLoginFlow'},
+					{value: 'VideoLoginClickFlow', label: 'VideoLoginClickFlow'},
+					{value: 'VideoInsertFlow', label: 'VideoInsertFlow'},
+					{value: 'VideoInsertClickFlow', label: 'VideoInsertClickFlow'},
+					{value: 'BannerStartFlow', label: 'BannerStartFlow'},
+					{value: 'BannerEndFlow', label: 'BannerEndFlow'},
+					{value: 'BannerClickFlow', label: 'BannerClickFlow'},
+					{value: 'WeChatSharePicFlow', label: 'WeChatSharePicFlow'},
+					{value: 'WeChatShareClickFlow', label: 'WeChatShareClickFlow'},
+					{value: 'WeChatShareLoginFlow', label: 'WeChatShareLoginFlow'}], 'User', null)) 
+  		var g_roleName = new Vue({el:'#role_name', data:{input:''}})
+  		var g_filter = new Vue({el:'#filter', data:{input:''}})
+
+  		var g_thirdParty = new Vue(GetSelVue('#third_party', [{value: 101, label: '穿山甲'},
+					{value: 102, label: '优量汇'},
+					{value: 103, label: '小米广告'}], 101, null))
+
+  		var g_relItem = new Vue(GetSelVue('#rel_item', [{value: "relation_sum", label: '师徒数据汇总'},
+  					{value: "relation_detail", label: '师徒数据明细'},
+  					{value: "relation_sign_sum", label: '徒弟签到汇总'},
+  					{value: "relation_sign_detail", label: '徒弟签到明细'},
+  					{value: "relation_tribute_sum", label: '徒弟进贡汇总'},
+  					{value: "relation_tribute_detail", label: '徒弟进贡明细'}], "relation_sum", null))
+
+  		var g_btnItemFind = new Vue({el:'#btn_item_find', data:{load:false}, methods:{click_item_find(){return show_item(this,'web')}}})
+  		var g_btnItemDown = new Vue({el:'#btn_item_download', data:{load:false}, methods:{click_item_download(){return show_item(this,'xlsx')}}})
+  		var g_btnFlowFind = new Vue({el:'#btn_flow_find', data:{load:false}, methods:{click_flow_find(){return show_flow(this,'web')}}})
+  		var g_btnFlowDown = new Vue({el:'#btn_flow_download', data:{load:false}, methods:{click_flow_download(){return show_flow(this,'xlsx')}}})
+  		var g_btnRelFind = new Vue({el:'#btn_rel_find', data:{load:false}, methods:{click_rel_find(){return show_relation(this,'web')}}})
+  		var g_btnRelDown = new Vue({el:'#btn_rel_download', data:{load:false}, methods:{click_rel_download(){return show_relation(this,'xlsx')}}})
+
+  		var g_uploadTP = new Vue({el:'#upload_tp', methods:{
+  			handleChange(file, fileList) {  				
+  				if (fileList.length > 1) {
+  					fileList.splice(0, 1)
+  				}  			
+  				fileTip = document.getElementById("file_tip")
+  				fileTip.innerHTML = "<i class='el-icon-document'></i>"
+  				fileTip.innerHTML += "<span> " + file.name + "</span>"
+			},
+  			uploadRequest(content) {
+  				var httpRequest = new XMLHttpRequest()
+	            httpRequest.open("POST", "upload", true)
+
+	            var formData = new FormData()
+	            formData.append("third_party", g_thirdParty.value)
+	            formData.append("file", content.file)
+	            httpRequest.send(formData)
+
+	            obj = this
+	            httpRequest.onreadystatechange = function() {
+	                if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+	                	res = httpRequest.responseText
+	                	if (res.substr(0, 7) == "[ERROR]") {
+	                		obj.$message.error(res)				    		
+				    	} else {				    		
+				    		obj.$message({message: res, type: 'success'})			    		
+				    	}
+	                }
+	            };
+            },
+  			submitUpload() {  				  			  				
+  				this.$refs.upload.submit();
+  			}      
+  		}})  
+	</script>			
+</body>
+</html>
